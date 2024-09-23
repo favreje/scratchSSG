@@ -1,3 +1,8 @@
+# import sys
+# import os
+# sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
+
+
 import unittest
 from htmlnode import HTMLNode
 
@@ -43,13 +48,13 @@ class TestHTMLNode(unittest.TestCase):
     def test_empty_prop(self):
         test_props = {}
         test_node_prop  = HTMLNode(TAG, VALUE, CHILDREN, test_props).props_to_html()
-        self.assertIsNone(test_node_prop)
+        result = ""
+        self.assertEqual(test_node_prop, result)
 
     def test_empty_props(self):
         test_props = {"href": "https://www.homepage.com", "":"" }
-        result = ' href="https://www.homepage.com" =""'
+        result = ' href="https://www.homepage.com"'
         test_node_props  = HTMLNode(TAG, VALUE, CHILDREN, test_props).props_to_html()
-        print(test_node_props)
         self.assertEqual(test_node_props, result)
 
 
