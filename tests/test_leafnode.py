@@ -1,8 +1,3 @@
-# import sys
-# import os
-# sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
-
-
 import unittest
 from htmlnode import LeafNode
 
@@ -20,11 +15,11 @@ class TestLeafNode(unittest.TestCase):
     def test_with_props(self):
         link_node = LeafNode("a", "Click me!", {"href": "https://www.google.com"})
         rendered_html = link_node.to_html()
-        result ='<a href="https://www.google.com">Click me!</a>'
+        result = '<a href="https://www.google.com">Click me!</a>'
         self.assertEqual(rendered_html, result)
 
     def test_with_no_tag(self):
-        tagless_node = LeafNode(tag= None, value= "This is unformatted text.")
+        tagless_node = LeafNode(tag=None, value="This is unformatted text.")
         rendered_html = tagless_node.to_html()
         result = "This is unformatted text."
         self.assertEqual(rendered_html, result)
@@ -35,6 +30,7 @@ class TestLeafNode(unittest.TestCase):
 
     def test_missing_value(self):
         with self.assertRaises(ValueError):
-            no_value_node = LeafNode(tag= "a", value= None, props= {"href": "https://www.google.com"})
+            no_value_node = LeafNode(
+                tag="a", value=None, props={"href": "https://www.google.com"}
+            )
             no_value_node.to_html()
-

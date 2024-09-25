@@ -1,5 +1,5 @@
 from textnode import TextNode
-from htmlnode import HTMLNode 
+from htmlnode import HTMLNode
 
 # Just preliminary tests. To be removed after setting up the unit testing files
 test_text = "Hello friend."
@@ -12,10 +12,10 @@ print(repr(node))
 print(node == node2)
 
 test_props = {
-    "href": "https://www.google.com", 
+    "href": "https://www.google.com",
     "target": "_blank",
 }
-test_htmlnode = HTMLNode("p", "Hello, friend.", props= test_props) 
+test_htmlnode = HTMLNode("p", "Hello, friend.", props=test_props)
 
 try:
     rslt_html = test_htmlnode.to_html()

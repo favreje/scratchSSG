@@ -1,8 +1,3 @@
-# import sys
-# import os
-# sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
-
-
 import unittest
 from htmlnode import HTMLNode
 
@@ -15,11 +10,12 @@ TAG = "a"
 VALUE = "Visit our homepage!"
 CHILDREN = [node1, node2, node3]
 
+
 class TestHTMLNode(unittest.TestCase):
     def test_single_prop(self):
         test_prop = {"href": "https://www.homepage.com"}
         result = ' href="https://www.homepage.com"'
-        node = HTMLNode(tag= TAG, value= VALUE, children= CHILDREN, props= test_prop)
+        node = HTMLNode(tag=TAG, value=VALUE, children=CHILDREN, props=test_prop)
         test_node_prop = node.props_to_html()
         self.assertEqual(test_node_prop, result)
 
@@ -29,8 +25,8 @@ class TestHTMLNode(unittest.TestCase):
             "target": "_blank",
         }
         result = ' href="https://www.google.com" target="_blank"'
-        test_node_prop  = HTMLNode(TAG, VALUE, CHILDREN, test_props).props_to_html()
-        self.assertEqual(test_node_prop , result)
+        test_node_prop = HTMLNode(TAG, VALUE, CHILDREN, test_props).props_to_html()
+        self.assertEqual(test_node_prop, result)
 
     def test_many_props(self):
         test_props = {
@@ -42,24 +38,21 @@ class TestHTMLNode(unittest.TestCase):
         }
 
         result = ' 1="one" 2="two" 3="three" 4="four" 5="five"'
-        test_node_prop  = HTMLNode(TAG, VALUE, CHILDREN, test_props).props_to_html()
+        test_node_prop = HTMLNode(TAG, VALUE, CHILDREN, test_props).props_to_html()
         self.assertEqual(test_node_prop, result)
 
     def test_empty_prop(self):
         test_props = {}
-        test_node_prop  = HTMLNode(TAG, VALUE, CHILDREN, test_props).props_to_html()
+        test_node_prop = HTMLNode(TAG, VALUE, CHILDREN, test_props).props_to_html()
         result = ""
         self.assertEqual(test_node_prop, result)
 
     def test_empty_props(self):
-        test_props = {"href": "https://www.homepage.com", "":"" }
+        test_props = {"href": "https://www.homepage.com", "": ""}
         result = ' href="https://www.homepage.com"'
-        test_node_props  = HTMLNode(TAG, VALUE, CHILDREN, test_props).props_to_html()
+        test_node_props = HTMLNode(TAG, VALUE, CHILDREN, test_props).props_to_html()
         self.assertEqual(test_node_props, result)
 
 
 if __name__ == "__main__":
     unittest.main()
-
-
-
