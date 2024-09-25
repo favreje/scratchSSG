@@ -15,7 +15,7 @@ class TestTextNode(unittest.TestCase):
 
     def test_eq_method(self):
         node = TextNode(
-            "This is a text node with a longer line ", "bold", "https://www.my_web_address.com"
+            "This is a text node with a longer line", "bold", "https://www.my_web_address.com"
         )
         node2 = TextNode(
             "This is a text node with a longer line", "bold", "https://www.my_web_address.com"
