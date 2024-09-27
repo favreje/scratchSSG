@@ -1,30 +1,49 @@
 from textnode import TextNode
-from htmlnode import HTMLNode
+from htmlnode import LeafNode
 
-# Just preliminary tests. To be removed after setting up the unit testing files
-test_text = "Hello friend."
-test_text_type = "ital"
-test_url = "https://www.levco.net"
-node = TextNode(test_text, test_text_type, test_url)
-node2 = TextNode(test_text, test_text_type, test_url)
 
-print(repr(node))
-print(node == node2)
+# Constants
+TEXT_TYPE_TEXT = "text"
+TEXT_TYPE_BOLD = "bold"
+TEXT_TYPE_ITALIC = "italic"
+TEXT_TYPE_CODE = "code"
+TEXT_TYPE_LINK = "link"
+TEXT_TYPE_IMAGE = "image"
 
-test_props = {
-    "href": "https://www.google.com",
-    "target": "_blank",
-}
-test_htmlnode = HTMLNode("p", "Hello, friend.", props=test_props)
 
-try:
-    rslt_html = test_htmlnode.to_html()
-    print(rslt_html)
-except NotImplementedError as e:
-    print(f"Error: {e}")
+def text_node_to_html_node(text_node):
 
-rendered_props = test_htmlnode.props_to_html()
-print("\nRendered HTML attributes:")
-print(rendered_props)
-print(repr(node))
-print(repr(test_htmlnode))
+    if text_node.text_type == TEXT_TYPE_TEXT:
+        return LeafNode(tag=None, value=text_node.text)
+
+    if text_node.text_type == TEXT_TYPE_BOLD:
+        return LeafNode(tag="b", value=text_node.text)
+
+    if text_node.text_type == TEXT_TYPE_ITALIC:
+        return LeafNode(tag="i", value=text_node.text)
+
+    if text_node.text_type == TEXT_TYPE_CODE:
+        return LeafNode(tag="code", value=text_node.text)
+
+    if text_node.text_type == TEXT_TYPE_LINK:
+        return LeafNode(tag="a", value=text_node.text, props={"href": text_node.url})
+
+    elif text_node.text_type == TEXT_TYPE_IMAGE:
+        image_props = {"src": text_node.url, "alt": text_node.text}
+        return LeafNode(tag="img", value="", props=image_props)
+
+    else:
+        raise Exception(
+            f"{text_node.text_type} is not a valid text_type. Use one of the following:\n"
+            f"'text', 'bold', 'italic', 'code', 'link', or 'image'"
+        )
+
+
+def main():
+    text_node = TextNode("Gus hanging out with his sister", "link", "gus_with_sister.jpg")
+    leaf = text_node_to_html_node(text_node)
+    print(leaf.to_html())
+
+
+if __name__ == "__main__":
+    main()

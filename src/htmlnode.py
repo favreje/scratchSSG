@@ -31,7 +31,7 @@ class LeafNode(HTMLNode):
         super().__init__(tag, value, None, props)
 
     def to_html(self):
-        if not self.value:
+        if self.value == None:
             raise ValueError("All leaf nodes must have a value.")
         if not self.tag:
             return self.value
@@ -45,63 +45,17 @@ class ParentNode(HTMLNode):
     children.
     """
 
-    def __init__(self, tag, children, props=None):
+    def __init__(self, tag, children=None, props=None):
         super().__init__(tag, None, children, props)
 
-    def to_html(self, html_build={"prefix": "", "suffix": ""}):
+    def __repr__(self):
+        return f"ParentNode({self.tag}, children: {self.children}, {self.props})"
+
+    def to_html(self):
         if not self.tag:
             raise ValueError("A tag is required for ParentNode objects.")
         if not self.children:
             raise ValueError("At least one child attribute is required for ParentNode objects.")
 
-        html_build["prefix"] += f"<{self.tag}>"
-        html_build["suffix"] = f"</{self.tag}>" + html_build["suffix"]
-        for node in self.children:
-            if isinstance(node, ParentNode):
-                return node.to_html(html_build)
-            html_build["prefix"] += node.to_html()
-        return html_build["prefix"] + html_build["suffix"]
-
-
-# -------------------------------------------------------------------------------------------------
-# Initial test
-# -------------------------------------------------------------------------------------------------
-node = ParentNode(
-    "div",
-    [
-        ParentNode(
-            "p",
-            [
-                LeafNode("b", "Jeffrey Favret, "),
-                LeafNode(None, "who is learning OOP "),
-                LeafNode("i", "and "),
-                LeafNode(None, "recursion, may be finally getting it!"),
-            ],
-        )
-    ],
-)
-
-node2 = ParentNode(
-    "html",
-    [
-        ParentNode(
-            "div",
-            [
-                ParentNode(
-                    "p",
-                    [
-                        LeafNode("b", "Jeffrey Favret, "),
-                        LeafNode(None, "who is learning OOP "),
-                        LeafNode("i", "and "),
-                        LeafNode(None, "recursion, may be finally getting it!"),
-                    ],
-                )
-            ],
-        ),
-    ],
-)
-
-result = node.to_html()
-result2 = node2.to_html()
-print(f"\n---\n{result}\n---")
-print(f"\n---\n{result2}\n---")
+        children_html = "".join(child.to_html() for child in self.children)
+        return f"<{self.tag}>{self.props_to_html()}{children_html}</{self.tag}>"
