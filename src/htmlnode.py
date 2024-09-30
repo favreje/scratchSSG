@@ -33,6 +33,11 @@ class LeafNode(HTMLNode):
     def to_html(self):
         if self.value == None:
             raise ValueError("All leaf nodes must have a value.")
+
+        # Check for self-closing tags, and handle accordingly
+        if self.value == "":
+            return f"<{self.tag}{self.props_to_html()}>"
+
         if not self.tag:
             return self.value
         return f"<{self.tag}{self.props_to_html()}>{self.value}</{self.tag}>"

@@ -82,8 +82,3 @@ class TestParentNode(unittest.TestCase):
         result = node.to_html()
         expectation = "<div><p>Hello, friend.</p></div>"
         self.assertEqual(result, expectation)
-
-    def test_props(self):
-        # Add a test case that has properties at the parent level. I don't think my code addresses
-        # this scenario.
-        pass
