@@ -1,4 +1,3 @@
-import enum
 from htmlnode import LeafNode
 
 # Constants
@@ -56,54 +55,59 @@ def text_node_to_html_node(text_node):
 
 
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
-    def create_text_nodes(node_parts):
-        new_nodes = []
-        for i, part in enumerate(node_parts):
-            if i % 2 == 0:
-                new_nodes.append(TextNode(part, node.text_type))
-            else:
-                new_nodes.append(TextNode(part, text_type))
-        return new_nodes
-
     delim = {"bold": "**", "italic": "*", "code": "`"}
     new_nodes = []
     for node in old_nodes:
+        if text_type not in delim:
+            raise Exception("Invalid text_type.")
         if delimiter != delim[text_type]:
             raise Exception("Delimiter argument does not match the text_type argument.")
-        if not delimiter in node.text:
-            raise Exception(f"Delimter {delimiter}: not found in the text argument.")
         if node.text.count(delimiter) % 2 != 0:
             raise Exception(f"Invalid mardown syntax: no closing delimiter for '{delimiter}'.")
 
         if node.text_type != TEXT_TYPE_TEXT:
             new_nodes.append(node)
         else:
-            node_parts = node.text.split(delim[text_type])
-            if text_type != TEXT_TYPE_ITALIC:
-                new_nodes.extend(create_text_nodes(node_parts))
-
-            else:
-                i = 0
-                builder = []
-                while i < len(node_parts):
-                    if i < len(node_parts) - 1 and node_parts[i + 1] == "":  # Double asterisk case
-                        builder.append(
-                            node_parts[i] + "**" + node_parts[i + 2] + "**" + node_parts[i + 4]
-                        )
-                        i += 5
+            text_builder = ""
+            is_new_type = False
+            i = 0
+            text = node.text
+            while i < len(text):
+                if text_type == TEXT_TYPE_BOLD:
+                    if i < len(text) - 1 and text[i] == "*" and text[i + 1] == "*":
+                        if is_new_type == False:
+                            is_new_type = True
+                            current_type = node.text_type
+                        else:
+                            is_new_type = False
+                            current_type = text_type
+                        if text_builder:
+                            new_nodes.append(TextNode(text_builder, current_type))
+                            text_builder = ""
+                        i += 2
                     else:
-                        builder.append(node_parts[i])
+                        text_builder += text[i]
                         i += 1
-
-                print(builder)
-                new_nodes.extend(create_text_nodes(builder))
-
+                else:
+                    if text[i] == delimiter:
+                        if i < len(text) - 1 and text[i] == "*" and text[i + 1] == "*":
+                            text_builder += "**"
+                            i += 1
+                        else:
+                            if text[i] == delimiter:
+                                if is_new_type == False:
+                                    is_new_type = True
+                                    current_type = node.text_type
+                                else:
+                                    is_new_type = False
+                                    current_type = text_type
+                                if text_builder:
+                                    new_nodes.append(TextNode(text_builder, current_type))
+                                    text_builder = ""
+                    else:
+                        text_builder += text[i]
+                    i += 1
+            if text_builder:
+                current_type = text_type if is_new_type else node.text_type
+                new_nodes.append(TextNode(text_builder, current_type))
     return new_nodes
-
-
-node = TextNode("This is **bold** text **with** an *italic* word", TEXT_TYPE_TEXT)
-new_nodes = split_nodes_delimiter([node], "*", TEXT_TYPE_ITALIC)
-
-# for i, node in enumerate(new_nodes):
-#     # print(f"{i}: '{node.text}', '{node.text_type}'")
-#     print([node.text, node.text_type])
