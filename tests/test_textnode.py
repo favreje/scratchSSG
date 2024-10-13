@@ -1,5 +1,6 @@
 import unittest
 from textnode import *
+from inline_markdown import *
 
 LARGE_NODE = TextNode(
     """ An *italic* markdown element, a **bold** markdown element, and a `code` markdown element
@@ -188,6 +189,282 @@ class TestTextNode(unittest.TestCase):
         self.assertEqual(italic_split_nodes, italic_expected_result)
         self.assertEqual(beginning_split_nodes, beginning_expected_result)
         self.assertEqual(end_split_nodes, end_expected_result)
+
+    # ----- Series of Tests for Extract Links and Extract Images -----
+    def test_valid_links(self):
+        text = "This is text with a ![rick roll](https://i.imgur.com/aKaOqIh.gif) and ![obi wan](https://i.imgur.com/fJRm4Vk.jpeg)"
+        image = extract_markdown_images(text)
+        expected_result = [
+            ("rick roll", "https://i.imgur.com/aKaOqIh.gif"),
+            ("obi wan", "https://i.imgur.com/fJRm4Vk.jpeg"),
+        ]
+        self.assertEqual(image, expected_result)
+
+        text = "This is text with a link [to boot dev](https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev)"
+        link = extract_markdown_links(text)
+        expected_result = [
+            ("to boot dev", "https://www.boot.dev"),
+            ("to youtube", "https://www.youtube.com/@bootdotdev"),
+        ]
+        self.assertEqual(link, expected_result)
+
+    def test_single_link(self):
+        text = "This is text with the infamous ![rick roll](https://i.imgur.com/aKaOqIh.gif)"
+        image = extract_markdown_images(text)
+        expected_result = [("rick roll", "https://i.imgur.com/aKaOqIh.gif")]
+        self.assertEqual(image, expected_result)
+
+        text = "This is text with a link [to boot dev](https://www.boot.dev)"
+        link = extract_markdown_links(text)
+        expected_result = [("to boot dev", "https://www.boot.dev")]
+        self.assertEqual(link, expected_result)
+
+    def test_no_alt_text(self):
+        text = "This is text with the infamous ![](https://i.imgur.com/aKaOqIh.gif)"
+        image = extract_markdown_images(text)
+        expected_result = [("", "https://i.imgur.com/aKaOqIh.gif")]
+        self.assertEqual(image, expected_result)
+
+        text = "This is text with a link [](https://www.boot.dev)"
+        link = extract_markdown_links(text)
+        expected_result = [("https://www.boot.dev", "https://www.boot.dev")]
+        self.assertEqual(link, expected_result)
+
+    # ----- Series of Tests for Split Nodes Links -----
+    def test_split_link(self):
+        node = TextNode(
+            "This is text with a link [to boot dev](https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev)",
+            TEXT_TYPE_TEXT,
+        )
+        node2 = TextNode(
+            "[boot-dev](https://www.boot.dev) and a second link [to youtube](https://www.youtube.com/@bootdotdev)",
+            TEXT_TYPE_TEXT,
+        )
+        node3 = TextNode(
+            "Only url: [boot-dev](https://www.boot.dev)",
+            TEXT_TYPE_TEXT,
+        )
+
+        node4 = TextNode(
+            "[boot-dev](https://www.boot.dev) is the only url in my list.",
+            TEXT_TYPE_TEXT,
+        )
+
+        node5 = TextNode(
+            "[boot-dev](https://www.boot.dev)",
+            TEXT_TYPE_TEXT,
+        )
+
+        node6 = TextNode(
+            "There are no urls in my list.",
+            TEXT_TYPE_TEXT,
+        )
+
+        node7 = TextNode(
+            "This is text with a link [to my server](https://www.favreje.com) and [to youtube](https://www.youtube.com/@phreeville)",
+            TEXT_TYPE_TEXT,
+        )
+
+        # Base case
+        split_node = split_nodes_link([node])
+        expected_result = [
+            TextNode("This is text with a link ", "text"),
+            TextNode("to boot dev", "link", url="https://www.boot.dev"),
+            TextNode(" and ", "text"),
+            TextNode("to youtube", "link", url="https://www.youtube.com/@bootdotdev"),
+        ]
+        self.assertEqual(split_node, expected_result)
+
+        # URL at beginning with other URLs
+        split_node = split_nodes_link([node2])
+        expected_result = [
+            TextNode("boot-dev", "link", url="https://www.boot.dev"),
+            TextNode(" and a second link ", "text"),
+            TextNode("to youtube", "link", url="https://www.youtube.com/@bootdotdev"),
+        ]
+        self.assertEqual(split_node, expected_result)
+
+        # Text, then One URL at end
+        split_node = split_nodes_link([node3])
+        expected_result = [
+            TextNode("Only url: ", "text"),
+            TextNode("boot-dev", "link", url="https://www.boot.dev"),
+        ]
+        self.assertEqual(split_node, expected_result)
+
+        # One URL, then text
+        split_node = split_nodes_link([node4])
+        expected_result = [
+            TextNode("boot-dev", "link", url="https://www.boot.dev"),
+            TextNode(" is the only url in my list.", "text"),
+        ]
+        self.assertEqual(split_node, expected_result)
+
+        # One URL, no text
+        split_node = split_nodes_link([node5])
+        expected_result = [
+            TextNode("boot-dev", "link", url="https://www.boot.dev"),
+        ]
+        self.assertEqual(split_node, expected_result)
+
+        # No URLs, text only
+        split_node = split_nodes_link([node6])
+        expected_result = [
+            TextNode("There are no urls in my list.", "text"),
+        ]
+        self.assertEqual(split_node, expected_result)
+
+        # Two nodes
+        split_node = split_nodes_link([node, node7])
+        expected_result = [
+            TextNode("This is text with a link ", "text"),
+            TextNode("to boot dev", "link", url="https://www.boot.dev"),
+            TextNode(" and ", "text"),
+            TextNode("to youtube", "link", url="https://www.youtube.com/@bootdotdev"),
+            TextNode("This is text with a link ", "text"),
+            TextNode("to my server", "link", url="https://www.favreje.com"),
+            TextNode(" and ", "text"),
+            TextNode("to youtube", "link", url="https://www.youtube.com/@phreeville"),
+        ]
+        self.assertEqual(split_node, expected_result)
+
+        # Two nodes, second node no links
+        split_node = split_nodes_link([node, node6])
+        expected_result = [
+            TextNode("This is text with a link ", "text"),
+            TextNode("to boot dev", "link", url="https://www.boot.dev"),
+            TextNode(" and ", "text"),
+            TextNode("to youtube", "link", url="https://www.youtube.com/@bootdotdev"),
+            TextNode("There are no urls in my list.", "text"),
+        ]
+        self.assertEqual(split_node, expected_result)
+
+        # Two nodes, no text between them
+        split_node = split_nodes_link([node5, node5])
+        expected_result = [
+            TextNode("boot-dev", "link", url="https://www.boot.dev"),
+            TextNode("boot-dev", "link", url="https://www.boot.dev"),
+        ]
+        self.assertEqual(split_node, expected_result)
+
+    # ----- Series of Tests for Split Nodes Images -----
+    def test_split_image(self):
+        node = TextNode(
+            "This is text with an image ![Rick doesn't care](https://i.imgur.com/aKaOqIh.gif) and another image ![Cute](https://i.imgur.com/rucw2JH.jpeg)",
+            TEXT_TYPE_TEXT,
+        )
+
+        node2 = TextNode(
+            "![Rick doesn't care](https://i.imgur.com/aKaOqIh.gif) and another image ![Cute](https://i.imgur.com/rucw2JH.jpeg)",
+            TEXT_TYPE_TEXT,
+        )
+
+        node3 = TextNode(
+            "Only image: ![Cute](https://i.imgur.com/rucw2JH.jpeg)",
+            TEXT_TYPE_TEXT,
+        )
+
+        node4 = TextNode(
+            "![Cute](https://i.imgur.com/rucw2JH.jpeg) is at the beginning.",
+            TEXT_TYPE_TEXT,
+        )
+
+        node5 = TextNode(
+            "![Cute](https://i.imgur.com/rucw2JH.jpeg)",
+            TEXT_TYPE_TEXT,
+        )
+
+        node6 = TextNode(
+            "There are no urls in my list.",
+            TEXT_TYPE_TEXT,
+        )
+
+        node7 = TextNode(
+            "Images of my dog: ![gus1](https://www.favreje.com/gus1.jpg) ![gus2](https://www.favreje.com/gus2.png)",
+            TEXT_TYPE_TEXT,
+        )
+
+        # Base case
+        split_node = split_nodes_image([node])
+        expected_result = [
+            TextNode("This is text with an image ", "text"),
+            TextNode("Rick doesn't care", "image", url="https://i.imgur.com/aKaOqIh.gif"),
+            TextNode(" and another image ", "text"),
+            TextNode("Cute", "image", url="https://i.imgur.com/rucw2JH.jpeg"),
+        ]
+        self.assertEqual(split_node, expected_result)
+
+        #  Image at beginning with other image
+        split_node = split_nodes_image([node2])
+        expected_result = [
+            TextNode("Rick doesn't care", "image", url="https://i.imgur.com/aKaOqIh.gif"),
+            TextNode(" and another image ", "text"),
+            TextNode("Cute", "image", url="https://i.imgur.com/rucw2JH.jpeg"),
+        ]
+        self.assertEqual(split_node, expected_result)
+
+        # Text, then One image at end
+        split_node = split_nodes_image([node3])
+        expected_result = [
+            TextNode("Only image: ", "text"),
+            TextNode("Cute", "image", url="https://i.imgur.com/rucw2JH.jpeg"),
+        ]
+        self.assertEqual(split_node, expected_result)
+
+        # One image, then text
+        split_node = split_nodes_image([node4])
+        expected_result = [
+            TextNode("Cute", "image", url="https://i.imgur.com/rucw2JH.jpeg"),
+            TextNode(" is at the beginning.", "text"),
+        ]
+        self.assertEqual(split_node, expected_result)
+
+        # One URL, no text
+        split_node = split_nodes_image([node5])
+        expected_result = [
+            TextNode("Cute", "image", url="https://i.imgur.com/rucw2JH.jpeg"),
+        ]
+        self.assertEqual(split_node, expected_result)
+
+        # # No URLs, text only
+        split_node = split_nodes_image([node6])
+        expected_result = [
+            TextNode("There are no urls in my list.", "text"),
+        ]
+        self.assertEqual(split_node, expected_result)
+
+        # Two nodes
+        split_node = split_nodes_image([node, node7])
+        expected_result = [
+            TextNode("This is text with an image ", "text"),
+            TextNode("Rick doesn't care", "image", url="https://i.imgur.com/aKaOqIh.gif"),
+            TextNode(" and another image ", "text"),
+            TextNode("Cute", "image", url="https://i.imgur.com/rucw2JH.jpeg"),
+            TextNode("Images of my dog: ", "text"),
+            TextNode("gus1", "image", url="https://www.favreje.com/gus1.jpg"),
+            TextNode(" ", "text"),
+            TextNode("gus2", "image", url="https://www.favreje.com/gus2.png"),
+        ]
+        self.assertEqual(split_node, expected_result)
+
+        # Two nodes, second node no links
+        split_node = split_nodes_image([node, node6])
+        expected_result = [
+            TextNode("This is text with an image ", "text"),
+            TextNode("Rick doesn't care", "image", url="https://i.imgur.com/aKaOqIh.gif"),
+            TextNode(" and another image ", "text"),
+            TextNode("Cute", "image", url="https://i.imgur.com/rucw2JH.jpeg"),
+            TextNode("There are no urls in my list.", "text"),
+        ]
+        self.assertEqual(split_node, expected_result)
+
+        # Two nodes, no text between them
+        split_node = split_nodes_image([node5, node5])
+        expected_result = [
+            TextNode("Cute", "image", url="https://i.imgur.com/rucw2JH.jpeg"),
+            TextNode("Cute", "image", url="https://i.imgur.com/rucw2JH.jpeg"),
+        ]
+        self.assertEqual(split_node, expected_result)
 
 
 if __name__ == "__main__":
