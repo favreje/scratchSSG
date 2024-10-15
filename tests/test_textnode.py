@@ -466,6 +466,63 @@ class TestTextNode(unittest.TestCase):
         ]
         self.assertEqual(split_node, expected_result)
 
+    # ----- Series of Tests for text_to_text_node function ----- #
+    def test_base_level_text_conversion(self):
+        text = "This is **text** with an *italic* word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+        nodes = text_to_textnodes(text)
+        expected_result = [
+            TextNode(text="This is ", text_type="text"),
+            TextNode(text="text", text_type="bold"),
+            TextNode(text=" with an ", text_type="text"),
+            TextNode(text="italic", text_type="italic"),
+            TextNode(text=" word and a ", text_type="text"),
+            TextNode(text="code block", text_type="code"),
+            TextNode(text=" and an ", text_type="text"),
+            TextNode(
+                text="obi wan image", text_type="image", url="https://i.imgur.com/fJRm4Vk.jpeg"
+            ),
+            TextNode(text=" and a ", text_type="text"),
+            TextNode(text="link", text_type="link", url="https://boot.dev"),
+        ]
+        self.assertEqual(nodes, expected_result)
+
+    def test_text_conversion_changed_order(self):
+        text = "This is *italic text* with a **bold** word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+        nodes = text_to_textnodes(text)
+        expected_result = [
+            TextNode(text="This is ", text_type="text"),
+            TextNode(text="italic text", text_type="italic"),
+            TextNode(text=" with a ", text_type="text"),
+            TextNode(text="bold", text_type="bold"),
+            TextNode(text=" word and a ", text_type="text"),
+            TextNode(text="code block", text_type="code"),
+            TextNode(text=" and an ", text_type="text"),
+            TextNode(
+                text="obi wan image", text_type="image", url="https://i.imgur.com/fJRm4Vk.jpeg"
+            ),
+            TextNode(text=" and a ", text_type="text"),
+            TextNode(text="link", text_type="link", url="https://boot.dev"),
+        ]
+        self.assertEqual(nodes, expected_result)
+
+    def test_text_conversion_with_text_only(self):
+        text = "This is only text."
+        nodes = text_to_textnodes(text)
+        expected_result = [TextNode("This is only text.", "text")]
+        self.assertEqual(nodes, expected_result)
+
+    def test_text_conversion_link_first(self):
+        text = "[link](https://boot.dev)"
+        node = text_to_textnodes(text)
+        expected_result = [TextNode("link", TEXT_TYPE_LINK, "https://boot.dev")]
+        self.assertEqual(node, expected_result)
+
+    def test_exception(self):
+        with self.assertRaises(Exception):
+            text = "Mismatched **bold."
+            node = text_to_textnodes(text)
+            return node
+
 
 if __name__ == "__main__":
     unittest.main()

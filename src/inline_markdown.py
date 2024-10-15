@@ -116,3 +116,13 @@ def split_nodes_link(old_nodes):
             if text:
                 new_nodes.append(TextNode(text, TEXT_TYPE_TEXT))
     return new_nodes
+
+
+def text_to_textnodes(text):
+    markdown_elements = {"bold": "**", "italic": "*", "code": "`"}
+    link_nodes = split_nodes_link([TextNode(text, TEXT_TYPE_TEXT)])
+    image_nodes = split_nodes_image(link_nodes)
+    bold_nodes = split_nodes_delimiter(image_nodes, markdown_elements["bold"], TEXT_TYPE_BOLD)
+    italic_nodes = split_nodes_delimiter(bold_nodes, markdown_elements["italic"], TEXT_TYPE_ITALIC)
+    code_nodes = split_nodes_delimiter(italic_nodes, markdown_elements["code"], TEXT_TYPE_CODE)
+    return code_nodes
