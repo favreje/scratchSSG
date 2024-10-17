@@ -12,10 +12,10 @@ LARGE_NODE = TextNode(
     bros." The italic markdown element *accepts his apology*, and *the four of them* proceed to
     **hug it out.** By the end of the night, they were all *pre-rendered* **(AF!)** to **HTML**,
     the website loaded *much faster*, and they all lived happily ever after. `The End.`""",
-    TEXT_TYPE_TEXT,
+    TextType.TEXT.value,
 )
 
-SMALL_NODE = TextNode("This is text with a `code block` word", TEXT_TYPE_TEXT)
+SMALL_NODE = TextNode("This is text with a `code block` word", TextType.TEXT.value)
 
 
 class TestTextNode(unittest.TestCase):
@@ -61,14 +61,14 @@ class TestTextNode(unittest.TestCase):
     # --- split_nodes_delimiter function testing ---
     def test_split_with_exceptions(self):
         with self.assertRaises(Exception):
-            split_nodes_delimiter([LARGE_NODE, SMALL_NODE], None, TEXT_TYPE_TEXT)
+            split_nodes_delimiter([LARGE_NODE, SMALL_NODE], None, TextType.TEXT.value)
         with self.assertRaises(Exception):
-            split_nodes_delimiter([SMALL_NODE, LARGE_NODE], "*", TEXT_TYPE_BOLD)
+            split_nodes_delimiter([SMALL_NODE, LARGE_NODE], "*", TextType.BOLD.value)
         with self.assertRaises(Exception):
             split_nodes_delimiter([SMALL_NODE, LARGE_NODE], "*", "other")
         with self.assertRaises(Exception):
             delim_not_closed_node = TextNode("This is bold** text.", "bold")
-            split_nodes_delimiter([delim_not_closed_node], "**", TEXT_TYPE_BOLD)
+            split_nodes_delimiter([delim_not_closed_node], "**", TextType.BOLD.value)
 
     def test_non_text_node(self):
         node = TextNode("Not a text_node.", "bold", "https://www.my_web_address.com")
@@ -77,9 +77,9 @@ class TestTextNode(unittest.TestCase):
 
     def test_base_case(self):
         expected_result = [
-            TextNode("This is text with a ", TEXT_TYPE_TEXT),
-            TextNode("code block", TEXT_TYPE_CODE),
-            TextNode(" word", TEXT_TYPE_TEXT),
+            TextNode("This is text with a ", TextType.TEXT.value),
+            TextNode("code block", TextType.CODE.value),
+            TextNode(" word", TextType.TEXT.value),
         ]
         nodes = split_nodes_delimiter([SMALL_NODE], "`", "code")
         self.assertEqual(nodes, expected_result)
@@ -234,35 +234,35 @@ class TestTextNode(unittest.TestCase):
     def test_split_link(self):
         node = TextNode(
             "This is text with a link [to boot dev](https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev)",
-            TEXT_TYPE_TEXT,
+            TextType.TEXT.value,
         )
         node2 = TextNode(
             "[boot-dev](https://www.boot.dev) and a second link [to youtube](https://www.youtube.com/@bootdotdev)",
-            TEXT_TYPE_TEXT,
+            TextType.TEXT.value,
         )
         node3 = TextNode(
             "Only url: [boot-dev](https://www.boot.dev)",
-            TEXT_TYPE_TEXT,
+            TextType.TEXT.value,
         )
 
         node4 = TextNode(
             "[boot-dev](https://www.boot.dev) is the only url in my list.",
-            TEXT_TYPE_TEXT,
+            TextType.TEXT.value,
         )
 
         node5 = TextNode(
             "[boot-dev](https://www.boot.dev)",
-            TEXT_TYPE_TEXT,
+            TextType.TEXT.value,
         )
 
         node6 = TextNode(
             "There are no urls in my list.",
-            TEXT_TYPE_TEXT,
+            TextType.TEXT.value,
         )
 
         node7 = TextNode(
             "This is text with a link [to my server](https://www.favreje.com) and [to youtube](https://www.youtube.com/@phreeville)",
-            TEXT_TYPE_TEXT,
+            TextType.TEXT.value,
         )
 
         # Base case
@@ -351,37 +351,37 @@ class TestTextNode(unittest.TestCase):
     def test_split_image(self):
         node = TextNode(
             "This is text with an image ![Rick doesn't care](https://i.imgur.com/aKaOqIh.gif) and another image ![Cute](https://i.imgur.com/rucw2JH.jpeg)",
-            TEXT_TYPE_TEXT,
+            TextType.TEXT.value,
         )
 
         node2 = TextNode(
             "![Rick doesn't care](https://i.imgur.com/aKaOqIh.gif) and another image ![Cute](https://i.imgur.com/rucw2JH.jpeg)",
-            TEXT_TYPE_TEXT,
+            TextType.TEXT.value,
         )
 
         node3 = TextNode(
             "Only image: ![Cute](https://i.imgur.com/rucw2JH.jpeg)",
-            TEXT_TYPE_TEXT,
+            TextType.TEXT.value,
         )
 
         node4 = TextNode(
             "![Cute](https://i.imgur.com/rucw2JH.jpeg) is at the beginning.",
-            TEXT_TYPE_TEXT,
+            TextType.TEXT.value,
         )
 
         node5 = TextNode(
             "![Cute](https://i.imgur.com/rucw2JH.jpeg)",
-            TEXT_TYPE_TEXT,
+            TextType.TEXT.value,
         )
 
         node6 = TextNode(
             "There are no urls in my list.",
-            TEXT_TYPE_TEXT,
+            TextType.TEXT.value,
         )
 
         node7 = TextNode(
             "Images of my dog: ![gus1](https://www.favreje.com/gus1.jpg) ![gus2](https://www.favreje.com/gus2.png)",
-            TEXT_TYPE_TEXT,
+            TextType.TEXT.value,
         )
 
         # Base case
@@ -514,7 +514,7 @@ class TestTextNode(unittest.TestCase):
     def test_text_conversion_link_first(self):
         text = "[link](https://boot.dev)"
         node = text_to_textnodes(text)
-        expected_result = [TextNode("link", TEXT_TYPE_LINK, "https://boot.dev")]
+        expected_result = [TextNode("link", TextType.LINK.value, "https://boot.dev")]
         self.assertEqual(node, expected_result)
 
     def test_exception(self):

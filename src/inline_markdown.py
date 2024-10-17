@@ -14,7 +14,7 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
         if node.text.count(delimiter) % 2 != 0:
             raise Exception(f"Invalid mardown syntax: no closing delimiter for '{delimiter}'.")
 
-        if node.text_type != TEXT_TYPE_TEXT:
+        if node.text_type != TextType.TEXT.value:
             new_nodes.append(node)
         else:
             text_builder = ""
@@ -22,7 +22,7 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
             i = 0
             text = node.text
             while i < len(text):
-                if text_type == TEXT_TYPE_BOLD:
+                if text_type == TextType.BOLD.value:
                     if i < len(text) - 1 and text[i] == "*" and text[i + 1] == "*":
                         if is_new_type == False:
                             is_new_type = True
@@ -88,13 +88,13 @@ def split_nodes_image(old_nodes):
                 image = f"![{image_elements[0]}]({image_elements[1]})"
                 text_chunks = text.split(image, 1)
                 if text_chunks[0]:
-                    new_nodes.append(TextNode(text_chunks[0], TEXT_TYPE_TEXT))
+                    new_nodes.append(TextNode(text_chunks[0], TextType.TEXT.value))
                 new_nodes.append(
-                    TextNode(image_elements[0], TEXT_TYPE_IMAGE, url=image_elements[1])
+                    TextNode(image_elements[0], TextType.IMAGE.value, url=image_elements[1])
                 )
                 text = text_chunks[1]
             if text:
-                new_nodes.append(TextNode(text, TEXT_TYPE_TEXT))
+                new_nodes.append(TextNode(text, TextType.TEXT.value))
     return new_nodes
 
 
@@ -110,19 +110,25 @@ def split_nodes_link(old_nodes):
                 link = f"[{link_elements[0]}]({link_elements[1]})"
                 text_chunks = text.split(link, 1)
                 if text_chunks[0]:
-                    new_nodes.append(TextNode(text_chunks[0], TEXT_TYPE_TEXT))
-                new_nodes.append(TextNode(link_elements[0], TEXT_TYPE_LINK, url=link_elements[1]))
+                    new_nodes.append(TextNode(text_chunks[0], TextType.TEXT.value))
+                new_nodes.append(
+                    TextNode(link_elements[0], TextType.LINK.value, url=link_elements[1])
+                )
                 text = text_chunks[1]
             if text:
-                new_nodes.append(TextNode(text, TEXT_TYPE_TEXT))
+                new_nodes.append(TextNode(text, TextType.TEXT.value))
     return new_nodes
 
 
 def text_to_textnodes(text):
     markdown_elements = {"bold": "**", "italic": "*", "code": "`"}
-    link_nodes = split_nodes_link([TextNode(text, TEXT_TYPE_TEXT)])
+    link_nodes = split_nodes_link([TextNode(text, TextType.TEXT.value)])
     image_nodes = split_nodes_image(link_nodes)
-    bold_nodes = split_nodes_delimiter(image_nodes, markdown_elements["bold"], TEXT_TYPE_BOLD)
-    italic_nodes = split_nodes_delimiter(bold_nodes, markdown_elements["italic"], TEXT_TYPE_ITALIC)
-    code_nodes = split_nodes_delimiter(italic_nodes, markdown_elements["code"], TEXT_TYPE_CODE)
+    bold_nodes = split_nodes_delimiter(image_nodes, markdown_elements["bold"], TextType.BOLD.value)
+    italic_nodes = split_nodes_delimiter(
+        bold_nodes, markdown_elements["italic"], TextType.ITALIC.value
+    )
+    code_nodes = split_nodes_delimiter(
+        italic_nodes, markdown_elements["code"], TextType.CODE.value
+    )
     return code_nodes

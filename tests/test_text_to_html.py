@@ -1,7 +1,7 @@
 import unittest
 from textnode import TextNode
 from htmlnode import LeafNode
-from main import text_node_to_html_node
+from textnode import text_node_to_html_node
 
 # Total tests before this module: 22
 # Total tests this module: 4
