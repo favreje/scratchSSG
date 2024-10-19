@@ -1,15 +1,15 @@
-from enum import Enum
+from enum import Enum, auto
 from htmlnode import LeafNode
 
 
 # Constants
 class TextType(Enum):
-    TEXT = "text"
-    BOLD = "bold"
-    ITALIC = "italic"
-    CODE = "code"
-    LINK = "link"
-    IMAGE = "image"
+    TEXT = auto()
+    BOLD = auto()
+    ITALIC = auto()
+    CODE = auto()
+    LINK = auto()
+    IMAGE = auto()
 
 
 class TextNode:
@@ -36,27 +36,27 @@ class TextNode:
 
 def text_node_to_html_node(text_node):
 
-    if text_node.text_type == TextType.TEXT.value:
+    if text_node.text_type == TextType.TEXT:
         return LeafNode(tag=None, value=text_node.text)
 
-    if text_node.text_type == TextType.BOLD.value:
+    if text_node.text_type == TextType.BOLD:
         return LeafNode(tag="b", value=text_node.text)
 
-    if text_node.text_type == TextType.ITALIC.value:
+    if text_node.text_type == TextType.ITALIC:
         return LeafNode(tag="i", value=text_node.text)
 
-    if text_node.text_type == TextType.CODE.value:
+    if text_node.text_type == TextType.CODE:
         return LeafNode(tag="code", value=text_node.text)
 
-    if text_node.text_type == TextType.LINK.value:
+    if text_node.text_type == TextType.LINK:
         return LeafNode(tag="a", value=text_node.text, props={"href": text_node.url})
 
-    elif text_node.text_type == TextType.IMAGE.value:
+    elif text_node.text_type == TextType.IMAGE:
         image_props = {"src": text_node.url, "alt": text_node.text}
         return LeafNode(tag="img", value="", props=image_props)
 
     else:
         raise Exception(
             f"{text_node.text_type} is not a valid text_type. Use one of the following:\n"
-            f"'text', 'bold', 'italic', 'code', 'link', or 'image'"
+            f"TEXT, BOLD, ITALIC, CODE, LINK, or IMAGE"
         )
