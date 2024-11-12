@@ -3,6 +3,11 @@ from textnode import *
 
 
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
+    """
+    Takes a list of TextNode objects, an in-line delimiter, and a text_type, and returns a new list
+    of TextNode objects, parsing in-line markdown elements into a separate TextNode. If the
+    text_type is not TextType.text, then the function returns the list of nodes unaltered.
+    """
     delim = {TextType.BOLD: "**", TextType.ITALIC: "*", TextType.CODE: "`"}
     new_nodes = []
     for node in old_nodes:

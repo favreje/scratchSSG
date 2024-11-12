@@ -13,6 +13,11 @@ class TextType(Enum):
 
 
 class TextNode:
+    """
+    A way to represent different types of in-line text. Text types can be: Normal, Bold, Italic,
+    Code, Links, Images. Otherwise, Markdown text is considered block-level text.
+    """
+
     def __init__(self, text, text_type, url=None):
         self.text = text
         self.text_type = text_type
@@ -35,6 +40,9 @@ class TextNode:
 
 
 def text_node_to_html_node(text_node):
+    """
+    Converts in-line HTML elements to a LeafNode
+    """
 
     if text_node.text_type == TextType.TEXT:
         return LeafNode(tag=None, value=text_node.text)

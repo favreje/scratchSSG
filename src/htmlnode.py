@@ -1,4 +1,13 @@
 class HTMLNode:
+    """
+    Represents a node in an HTML document tree
+        tag: str representing the HTML tag
+        value: str representing
+        children: list of HTMLNode objects representing the children of this node
+        props: dict of name value pairs representing HTML attributes
+
+    """
+
     def __init__(self, tag=None, value=None, children=None, props=None):
         self.tag = tag
         self.value = value
@@ -27,6 +36,11 @@ class HTMLNode:
 
 
 class LeafNode(HTMLNode):
+    """
+    Represents a single HTML tag with no children (i.e., the last node in an HTMLNode tree)
+    Value is required (and cannot equal None) and tag is required (although it may equal None)
+    """
+
     def __init__(self, tag, value, props=None):
         super().__init__(tag, value, None, props)
 
@@ -46,8 +60,8 @@ class LeafNode(HTMLNode):
 class ParentNode(HTMLNode):
     """
     ParentNode(tag, children, [props])
-    Handles nested HTML nodes. Returns a string representing the HTML tag of the node and its
-    children.
+    Handles nested HTML nodes. If an HTMLNode is not a LeafNode, (i.e., it has children) then it
+    must be a ParentNode
     """
 
     def __init__(self, tag, children=None, props=None):
