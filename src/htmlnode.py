@@ -20,6 +20,16 @@ class HTMLNode:
             f"children= {self.children}, props= {self.props})"
         )
 
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            return False
+        return (
+            self.tag == other.tag
+            and self.value == other.value
+            and self.children == other.children
+            and self.props == other.props
+        )
+
     def to_html(self):
         err_msg = f"Child classes will override this method to render themselves as HTML."
         raise NotImplementedError(err_msg)
@@ -45,7 +55,9 @@ class LeafNode(HTMLNode):
         super().__init__(tag, value, None, props)
 
     def __repr__(self):
-        return f"LeafNode({self.tag=}, {self.value=}, {self.props=})"
+        tag_part = f"tag={repr(self.tag)}, " if self.tag is not None else ""
+        props_part = f"props={repr(self.props)}" if self.props is not None else ""
+        return f"LeafNode({tag_part}value={repr(self.value)}{props_part})"
 
     def to_html(self):
         if self.value == None:
@@ -71,7 +83,10 @@ class ParentNode(HTMLNode):
         super().__init__(tag, None, children, props)
 
     def __repr__(self):
-        return f"ParentNode({self.tag}, children: {self.children}, {self.props})"
+        children_part = f", children={self.children}" if self.children is not None else ""
+        props_part = f", props={repr(self.props)}" if self.props is not None else ""
+
+        return f"ParentNode({repr(self.tag)}{children_part}{props_part})"
 
     def to_html(self):
         if not self.tag:

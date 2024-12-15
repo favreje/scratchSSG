@@ -190,6 +190,6 @@ class TestTextNode(unittest.TestCase):
             BlockType.PARAGRAPH,
             BlockType.PARAGRAPH,
             BlockType.ORDERED_LIST,
-            BlockType.PARAGRAPH,
+            BlockType.ORDERED_LIST,
         ]
         self.assertEqual(test_types, expected_types)

@@ -27,16 +27,16 @@ def block_to_block_type(block):
     if re.match(r"^```([\s\S]*?)```(?=\Z)", block):
         return BlockType.CODE
 
-    matches = re.match(r"^(>\s?.*(\n|\Z))+$", block)
+    matches = re.match(r"^(\s*>\s*.*(\n|\Z))+$", block)
     if matches:
         return BlockType.QUOTE
 
-    matches = re.match(r"^([*-]\s+.+(\n|\Z))+$", block)
+    matches = re.match(r"^(\s*[*-]\s+.+(\n|\Z))+$", block)
     if matches:
         return BlockType.UNORDERED_LIST
 
-    if re.match(r"^(\d+\.\s+.+(\n|\Z))+$", block):
-        numbers = re.findall(r"^(\d+)\.", block, re.MULTILINE)
+    if re.match(r"^(\s*\d+\.\s+.+(\n|\Z))+$", block):
+        numbers = re.findall(r"^\s*(\d+)\.", block, re.MULTILINE)
         numbers = [int(num) for num in numbers]
         if numbers == list(range(1, len(numbers) + 1)):
             return BlockType.ORDERED_LIST
@@ -61,7 +61,9 @@ def parse_markdown_list_items(block_type, block):
     if block_type not in (BlockType.ORDERED_LIST, BlockType.UNORDERED_LIST):
         raise ValueError("BlockType must be ORDERED_LIST or UNORDERED_LIST.")
     list_items = []
-    pattern = r"^[*-]\s+(.+)$" if block_type == BlockType.UNORDERED_LIST else r"^[0-9]+\.\s+(.+)$"
+    pattern = (
+        r"^\s*[*-]\s+(.+)$" if block_type == BlockType.UNORDERED_LIST else r"^\s*[0-9]+\.\s+(.+)$"
+    )
     match = re.finditer(pattern, block, re.MULTILINE)
     for m in match:
         text = m.group(1)
@@ -94,21 +96,23 @@ def block_to_node(block):
         else:
             code_text = None
         children = text_to_children(code_text)
-        code_child = ParentNode(tag="code", children=children)
+        code_child = [ParentNode(tag="code", children=children)]
         node = ParentNode(tag="pre", children=code_child)
         return node
     if block_type == BlockType.QUOTE:
-        lines = re.findall(r"^>\s?(.*)", block, re.MULTILINE)
+        lines = re.findall(r"^\s*>\s*(.*)", block, re.MULTILINE)
         text = "\n".join(lines)
         children = text_to_children(text)
         node = ParentNode(tag="blockquote", children=children)
         return node
     if block_type == BlockType.UNORDERED_LIST:
         children = parse_markdown_list_items(BlockType.UNORDERED_LIST, block)
-        return HTMLNode(tag="ul", value=None, children=children, props=None)
+        node = ParentNode(tag="ul", children=children)
+        return node
     if block_type == BlockType.ORDERED_LIST:
         children = parse_markdown_list_items(BlockType.ORDERED_LIST, block)
-        return HTMLNode(tag="ol", value=None, children=children, props=None)
+        node = ParentNode(tag="ol", children=children)
+        return node
 
 
 def markdown_to_html_node(markdown):
