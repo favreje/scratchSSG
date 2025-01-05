@@ -1,10 +1,52 @@
 import unittest
-from markdown_to_html import markdown_to_html_node
+from markdown_to_html import *
 from htmlnode import *
 
 
 markdown_text = """
 # Blog Post
+
+The main paragraph of my blog post will discuss the following points:
+
+1. Point number one
+2. Point number two
+3. Point number three
+
+And these unordered list items
+
+- First random thing
+- Second random thing
+- Third random thing
+- Fourth random thing **in no particular order**
+
+And it will contain the following code snippet:
+
+```
+for i in range(10):
+    print("Hello world")
+```
+
+> Words can be like X-rays,
+> if you use them properly-they'll go through *anything*.
+> You read and you're *pierced*.
+
+## Second Point:
+
+### Markdown can contain **various** in-line *code*, links and images
+
+#### Here are a few useful links:
+
+[boot-dot-dev](https://www.youtube.com/@bootdotdev)
+[My home page](https://www.favreje.com)
+
+#### And a funny image
+
+![Rick has no F's to give](https://i.imgur.com/aKaOqIh.gif)
+
+"""
+
+markdown_text_missing_header = """
+## Blog Post
 
 The main paragraph of my blog post will discuss the following points:
 
@@ -213,3 +255,13 @@ class TestMarkdownToHTML(unittest.TestCase):
             ],
         )
         self.assertEqual(node, expected_result)
+
+    def test_extract_title(self):
+        title = extract_title(markdown_text)
+        expected_result = "Blog Post"
+        self.assertEqual(title, expected_result)
+
+    def test_exception(self):
+        with self.assertRaises(HeaderNotFoundException):
+            title = extract_title(markdown_text_missing_header)
+            print(title)

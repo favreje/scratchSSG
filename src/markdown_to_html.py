@@ -5,6 +5,10 @@ from inline_markdown import text_to_textnodes
 from textnode import text_node_to_html_node
 
 
+class HeaderNotFoundException(Exception):
+    pass
+
+
 class BlockType(Enum):
     PARAGRAPH = auto()
     HEADING = auto()
@@ -124,9 +128,27 @@ def markdown_to_html_node(markdown):
     return ParentNode(tag="div", children=node_list)
 
 
+def extract_title(markdown):
+    """
+    Pulls the h1 header from the markdown file (the line that starts with a single #) and returns
+    the stripped text title.
+
+    Although not explicitly stated in the project requirements, the function assumes that only the
+    first h1 header encountered will be returned.
+    """
+    blocks = markdown_to_blocks(markdown)
+    for block in blocks:
+        if block_to_block_type(block) == BlockType.HEADING:
+            heading_level, heading_text = get_heading_level(block)
+            if heading_level == "h1":
+                return heading_text
+    raise HeaderNotFoundException("No H1 header found in markdown content")
+
+
 def main():
     markdown_text = """
-# Blog Post
+
+# Jeffrey's Personal Diary
 
 The main paragraph of my blog post will discuss the following points:
 
@@ -169,17 +191,19 @@ for i in range(10):
 
 """
 
-    main_node = markdown_to_html_node(markdown_text)
-    for child in main_node.children:
-        print(child.tag)
-        print(child.children)
-        print()
+    # main_node = markdown_to_html_node(markdown_text)
+    # for child in main_node.children:
+    #     print(child.tag)
+    #     print(child.children)
+    #     print()
+    #
+    # print("----------")
+    # print(main_node)
 
-    print("----------")
-    print(main_node)
+    print()
+    test = extract_title(markdown_text)
+    print(repr(test))
 
 
-#
-#
 if __name__ == "__main__":
     main()
