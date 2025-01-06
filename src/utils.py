@@ -1,12 +1,12 @@
 import os
 from shutil import copy, rmtree
-from markdown_to_html import extract_title
+from markdown_to_html import extract_title, markdown_to_html_node
 
 
 def copy_content(source, dest):
     """
-    Copies a file tree structure (all files in the parent directory and subdirectories) from a
-    source location to a destination location.
+    Removes existing content from 'dest' and recursively copies the file tree structure from
+    'source' to 'dest'
 
     For the purposes of this SSG project, it is used to copy the files from a static directory to a
     public directory to stage blog data for a website.
@@ -48,29 +48,36 @@ def rcopy(source, dest):
             rcopy(source_path, dest_path)
 
 
-def extact_file_data(file_path):
+def get_file(file_path):
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"{file_path} not found")
     with open(file_path, encoding="utf-8") as f:
         return f.read()
 
 
+def put_file(file_path, content):
+    dir_path, _ = os.path.split(file_path)
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path)
+    with open(file_path, "w", encoding="utf-8") as f:
+        f.write(content)
+
+
 def generate_page(from_path, template_path, dest_path):
-    md_file = extact_file_data(from_path)
-    template = extact_file_data(template_path)
+    md_file = get_file(from_path)
+    template = get_file(template_path)
     title = extract_title(md_file)
-    dest_file = template.replace(" {{ Title }} ", str(title))
-    return md_file, dest_file
+    html_node = markdown_to_html_node(md_file)
+    html = html_node.to_html()
+    content = template.replace(" {{ Title }} ", str(title))
+    content = content.replace(" {{ Content }}", html)
+    print(f"Generating page from {from_path} to {dest_path} using {template_path}")
+    put_file(dest_path, content)
 
 
 if __name__ == "__main__":
-    # source = "test-file-copy-source"
-    # dest = "test-file-copy-dest"
-    # copy_content(source, dest)
 
     source = "content/index.md"
     template = "template.html"
-    raw_md_file, destination = generate_page(source, template, None)
-    print(raw_md_file)
-    print()
-    print(destination)
+    destination = "public/index.html"
+    html_file = generate_page(source, template, destination)
