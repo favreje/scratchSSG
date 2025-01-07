@@ -75,9 +75,27 @@ def generate_page(from_path, template_path, dest_path):
     put_file(dest_path, content)
 
 
+def generate_pages_recursive(dir_path, template_path, dest_dir_path):
+    dir_contents = os.listdir(dir_path)
+    for object in dir_contents:
+        full_path = os.path.join(dir_path, object)
+        if os.path.isfile(full_path):
+            _, ext = os.path.splitext(object)
+            if ext == ".md":
+                base_name, _ = os.path.splitext(object)
+                dest_file = os.path.join(dest_dir_path, base_name + ".html")
+                generate_page(full_path, template_path, dest_file)
+            else:
+                print(f"{object} is not markdown... copying file to {dest_dir_path}")
+                copy(full_path, dest_dir_path)
+        else:
+            new_dest_dir_path = os.path.join(dest_dir_path, object)
+            if not os.path.exists(new_dest_dir_path):
+                os.makedirs(new_dest_dir_path)
+            generate_pages_recursive(full_path, template_path, new_dest_dir_path)
+
+
 if __name__ == "__main__":
 
-    source = "content/index.md"
-    template = "template.html"
-    destination = "public/index.html"
-    html_file = generate_page(source, template, destination)
+    # html_file = generate_page(source, template, destination)
+    generate_pages_recursive("content", "template.html", "test_dir")

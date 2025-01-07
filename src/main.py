@@ -3,10 +3,7 @@ import utils
 
 def main():
     utils.copy_content("static", "public")
-    source = "content/index.md"
-    template = "template.html"
-    destination = "public/index.html"
-    utils.generate_page(source, template, destination)
+    utils.generate_pages_recursive("content", "template.html", "public")
 
 
 if __name__ == "__main__":
